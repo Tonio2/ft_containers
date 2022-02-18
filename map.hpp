@@ -65,6 +65,14 @@ namespace ft {
 
 			~map() { this->clear(); }
 
+			iterator begin() { return bst.begin(); }
+			iterator end() { return bst.end(); }
+
+			const_iterator begin() const { return bst.begin(); }
+			const_iterator end() const { return bst.end(); }
+
+			size_type size() const { return bst.size(); }
+			size_type max_size() const { return bst.max_size(); }
 
 			ft::pair<iterator, bool> insert(const value_type& val) {
 				ft::pair<iterator, bool> ret = bst.insert(val);
@@ -93,19 +101,11 @@ namespace ft {
 			}
 
 			size_type erase(const key_type& k) {
-				bst.removeByKey()
+				return bst.removeByKey(k);
 			}
 
-
-			iterator begin() { return bst.begin(); }
-			iterator end() { return bst.end(); }
-
-			const_iterator begin() const { return bst.begin(); }
-			const_iterator end() const { return bst.end(); }
-
-			size_type size() const { return bst.size(); }
-
-			size_type max_size() const { return bst.max_size(); }
+			iterator find(const key_type& k) { return bst.find(k); }
+			const_iterator find(const key_type& k) const { return bst.find(k); }
 		private:
 			ft::BST<value_type, value_compare, allocator_type>	bst;
 			key_compare											comp;

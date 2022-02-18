@@ -273,6 +273,47 @@ namespace ft {
 				node_alloc.deallocate(last, 1);
 			}
 
+			// void clear() {
+			// 	iterator cur = begin();
+			// 	iterator prev = cur;
+
+			// 	while ( cur != end())
+			// 	{
+			// 		cur++;
+			// 		node_alloc.destroy(prev.as_node());
+			// 		prev = cur;
+			// 	}
+
+			// 	last->parent = 0;
+			// 	last->left = 0;
+			// 	last->right = 0;
+			// }
+
+
+
+			iterator begin() {
+				iterator it(last->left, last);
+				return it;
+			}
+
+			const_iterator begin() const {
+				const_iterator it(last->left, last);
+				return it;
+			}
+
+			iterator end() {
+				iterator ite(last, last);
+				return ite;
+			}
+
+			const_iterator end() const {
+				const_iterator ite(last, last);
+				return ite;
+			}
+
+			size_type size() const { return _size; }
+			size_type max_size() const { return node_alloc.max_size() - 1; }
+			
 			ft::pair<iterator, bool>	insert(const value_type& val, iterator position = iterator()) {
 				node_type		new_node(val);
 
@@ -343,46 +384,27 @@ namespace ft {
 				return ft::make_pair<iterator, bool> (iterator(cur, last), true);
 			}
 
-			void clear() {
-				iterator cur = begin();
-				iterator prev = cur;
+			size_type erase(const key_type& k) {
 
-				while ( cur != end())
+			}
+
+			iterator find(const key_type& k) {
+				node_pointer cur = last->parent;
+
+				while (cur)
 				{
-					cur++;
-					node_alloc.destroy(prev.as_node());
-					prev = cur;
+					if (comp(ft::make_pair<const key_type, mapped_type> (k, mapped_type()), cur->content))
+						cur = cur->left;
+					else if (comp(cur->content, ft::make_pair<const key_type, mapped_type> (k, mapped_type())))
+						cur = cur->right;
+					else
+					{
+						iterator it(cur, last);
+						return it;
+					}
 				}
-
-				last->parent = 0;
-				last->left = 0;
-				last->right = 0;
+				
 			}
-
-			iterator begin() {
-				iterator it(last->left, last);
-				return it;
-			}
-
-			const_iterator begin() const {
-				const_iterator it(last->left, last);
-				return it;
-			}
-
-			iterator end() {
-				iterator ite(last, last);
-				return ite;
-			}
-
-			const_iterator end() const {
-				const_iterator ite(last, last);
-				return ite;
-			}
-
-			size_type size() const { return _size; }
-			size_type max_size() const { return node_alloc.max_size() - 1; }
-			
-
 		private:
 			node_pointer		last;
 			Comp				comp;
