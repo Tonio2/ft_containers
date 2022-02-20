@@ -384,18 +384,66 @@ namespace ft {
 				return ft::make_pair<iterator, bool> (iterator(cur, last), true);
 			}
 
-			size_type erase(const key_type& k) {
+			size_type erase(const value_type& k) {
+				node_pointer to_remove = find(k).as_node();
+				if (!to_remove)
+					return 0;
 
+				node_pointer tmp_parent, tmp_left, tmp_right;
+				tmp_parent = to_remove->parent;
+				tmp_left = to_remove->left;
+				tmp_right = to_remove->right;
+
+				node_pointer replace_with = 0;
+				if (tmp_right)
+					replace_with = tmp_right->leftmost();
+				else if (tmp_left)
+					replace_with = tmp_left->rightmost();
+				if (!replace_with)
+				{
+					if (last->left == to_remove)
+						last->left = tmp_parent;
+					if (last->right == to_remove)
+						last->right = tmp_parent;
+					if (last->parent == to_remove)
+						last->parent = tmp_parent;
+				}
+				else
+				{
+					node_pointer tmp_parent2 = replace_with->parent;
+					node_pointer tmp_right2 = replace_with->right;
+					node_pointer tmp_left2 = replace_with->left;
+
+					if (!tmp_parent)
+						last->parent = replace_with;
+					else if (to_remove == tmp_parent->left)
+						tmp_parent->left = replace_with;
+					else if (to_remove == tmp_parent->right)
+						tmp_parent->right = replace_with;
+					
+					replace_with->left = tmp_left;
+					if (replace_with->left == replace_with)
+						replace_with->left = tmp_left2;
+					replace_with->right = tmp_right;
+					if (replace_with->right == replace_with)
+						replace_with->right = tmp_right2;
+
+					tmp_parent2->left = tmp_left2;
+					tmp_parent2->right = tmp_right2;
+				}
+				node_alloc.destroy(to_remove);
+				node_alloc.deallocate(to_remove, 1);
+				return 1;
 			}
 
-			iterator find(const key_type& k) {
+			iterator find(const value_type& k) {
 				node_pointer cur = last->parent;
 
 				while (cur)
 				{
-					if (comp(ft::make_pair<const key_type, mapped_type> (k, mapped_type()), cur->content))
+					if (comp(k, cur->content))
 						cur = cur->left;
-					else if (comp(cur->content, ft::make_pair<const key_type, mapped_type> (k, mapped_type())))
+					else if (comp(cur->content, k))
 						cur = cur->right;
 					else
 					{
@@ -403,6 +451,7 @@ namespace ft {
 						return it;
 					}
 				}
+				return end();
 				
 			}
 		private:

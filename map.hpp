@@ -92,8 +92,15 @@ namespace ft {
 			void clear() { this->erase(begin(), end()); }
 
 			void erase(iterator first, iterator last) {
-				for (iterator it = first; it != last; it++)
-					this->erase(it);				
+				iterator it_cur = first;
+				iterator it_next = first;
+				it_next++;
+				while (it_cur != last)
+				{
+					this->erase(it_cur);
+					it_cur = it_next;
+					it_next++;
+				}			
 			}
 
 			void erase(iterator position) {
@@ -101,7 +108,7 @@ namespace ft {
 			}
 
 			size_type erase(const key_type& k) {
-				return bst.removeByKey(k);
+				return bst.erase(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
 			}
 
 			iterator find(const key_type& k) { return bst.find(k); }
