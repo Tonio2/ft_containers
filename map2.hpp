@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include "utils.hpp"
-#include "bst.hpp"
+#include "RBbst.hpp"
 
 namespace ft {
 	template <	class Key,												// map::key_type
@@ -46,7 +46,7 @@ namespace ft {
 
 			explicit map (	const key_compare& _comp = key_compare(),
               				const allocator_type& _alloc = allocator_type())
-				:	bst(value_compare(_comp), _alloc),
+				:	rb_bst(value_compare(_comp), _alloc),
 					comp(_comp),
 					alloc(_alloc) {}
 
@@ -54,20 +54,19 @@ namespace ft {
 			map (	InputIterator first, InputIterator last,
 					const key_compare& _comp = key_compare(),
 					const allocator_type& _alloc = allocator_type())
-				:	bst(value_compare(_comp), _alloc),
+				:	rb_bst(first, last, value_compare(_comp), _alloc),
 					comp(_comp),
-					alloc(_alloc) { insert(first, last); }
+					alloc(_alloc) {}
 			
 			map (const map& x)
-				:	bst(value_compare(x.comp), x.alloc),
+				:	rb_bst(x.rb_bst),
 					comp(x.comp),
-					alloc(x.alloc) { insert(x.begin(), x.end()); }
+					alloc(x.alloc) {}
 
 			~map() { this->clear(); }
 
 			map& operator=(const map& m) {
-				this->clear();
-				this->insert(m.begin(), m.end());
+				rb_bst = m.rb_bst;
 				return *this;
 			}
 
@@ -77,61 +76,63 @@ namespace ft {
 			const_iterator begin() const { return bst.begin(); }
 			const_iterator end() const { return bst.end(); }
 
-			size_type size() const { return bst.size(); }
+			reverse_iterator rbegin() { return bst.rbegin(); }
+			reverse_iterator rend() { return bst.rend(); }
+
+			const_reverse_iterator rbegin() const { return bst.rbegin(); }
+			const_reverse_iterator rend() const { return bst.rend(); }
+
+			bool empty() const { return size() == 0; }
+			size_type size() const { return rb_bst.size(); }
 			size_type max_size() const { return bst.max_size(); }
 
 			mapped_type& operator[] (const key_type& k) {
-				return (*((this->insert(ft::make_pair(k,mapped_type()))).first)).second;
+				return (*((this->insert(make_pair(k,mapped_type()))).first)).second;
 			}
 
-			ft::pair<iterator, bool> insert(const value_type& val) {
-				ft::pair<iterator, bool> ret = bst.insert(val);
-				return ret;
+			pair<iterator,bool> insert (const value_type& val) {
+				return rb_bst.insert(val);
 			}
 
-			iterator insert(iterator position, const value_type& val) {
-				ft::pair<iterator, bool> ret = bst.insert(val, position);
-				return ret.first;
+			iterator insert (iterator position, const value_type& val) {
+				return rb_bst.insert(val, position).first;
 			}
 
 			template <class InputIter>
 			void insert(InputIter first, InputIter last) {
-				for (InputIter it = first; it != last; it++) { bst.insert(*it); }
+				for (InputIter it = first; it != last; it++) bst.insert(*it);
 			}
 
-			void clear() { 
-				this->erase(begin(), end());
+			void erase (iterator position) { rb_bst.erase(position.as_node()); }
+			size_type erase (const key_type& k) {
+				return rb_bst.erase(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+			}
+     		void erase (iterator first, iterator last) {
+				 for (iterator it = first; it != last; ++it) rb_bst.erase(((--it)++).as_node());
 			}
 
-			void erase(iterator first, iterator last) {
-				iterator it_cur = first;
-				iterator it_next = first;
-				it_next++;
-				while (it_cur != last)
-				{
-					this->erase(it_cur);
-					it_cur = it_next;
-					it_next++;
-				}			
+			void swap (map& x) { rb_bst.swap(x.rb_bst); }
+
+			//can be hugely optimized if necessary
+			void clear() { this->erase(begin(), end()); }
+
+			key_compare key_comp() const { return comp; }
+			value_compare	value_comp() const { return value_compare(comp); }
+
+			iterator find (const key_type& k) {
+				return rb_bst.find(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+			}
+			const_iterator find (const key_type& k) const {
+				return rb_bst.find(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
 			}
 
-			void erase(iterator position) {
-				this->erase(position->first);
+			size_type count (const key_type& k) const {
+				return (find(k) != end());
 			}
 
-			size_type erase(const key_type& k) {
-				return bst.erase(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
-			}
+			iterator lower_bound (const key_type& k);
+			const_iterator lower_bound (const key_type& k) const;
 
-			iterator find(const key_type& k) { return bst.find(k); }
-			const_iterator find(const key_type& k) const { return bst.find(k); }
 
-			void ft_print() {
-				bst.ft_print(0);
-			}
-		private:
-			ft::BST<value_type, value_compare, allocator_type>	bst;
-			key_compare											comp;
-			allocator_type										alloc;
-	};
+
 }

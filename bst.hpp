@@ -273,30 +273,16 @@ namespace ft {
 				node_alloc.deallocate(last, 1);
 			}
 
-			// void clear() {
-			// 	iterator cur = begin();
-			// 	iterator prev = cur;
-
-			// 	while ( cur != end())
-			// 	{
-			// 		cur++;
-			// 		node_alloc.destroy(prev.as_node());
-			// 		prev = cur;
-			// 	}
-
-			// 	last->parent = 0;
-			// 	last->left = 0;
-			// 	last->right = 0;
-			// }
-
-
-
 			iterator begin() {
+				if (_size == 0)
+					return iterator(last, last);
 				iterator it(last->left, last);
 				return it;
 			}
 
 			const_iterator begin() const {
+				if (_size == 0)
+					return const_iterator(last, last);
 				const_iterator it(last->left, last);
 				return it;
 			}
@@ -384,55 +370,132 @@ namespace ft {
 				return ft::make_pair<iterator, bool> (iterator(cur, last), true);
 			}
 
+			// size_type erase(const value_type& k) {
+			// 	node_pointer to_remove = find(k).as_node();
+			// 	if (!to_remove)
+			// 		return 0;
+
+			// 	node_pointer tmp_parent, tmp_left, tmp_right;
+			// 	tmp_parent = to_remove->parent;
+			// 	tmp_left = to_remove->left;
+			// 	tmp_right = to_remove->right;
+
+			// 	node_pointer replace_with = 0;
+			// 	if (tmp_right)
+			// 		replace_with = tmp_right->leftmost();
+			// 	else if (tmp_left)
+			// 		replace_with = tmp_left->rightmost();
+			// 	if (!replace_with)
+			// 	{
+			// 		if (last->left == to_remove)
+			// 		{
+			// 			last->left = tmp_parent;
+			// 			tmp_parent->left =
+			// 		}
+						
+			// 		if (last->right == to_remove)
+			// 			last->right = tmp_parent;
+			// 		if (last->parent == to_remove)
+			// 			last->parent = tmp_parent;
+			// 	}
+			// 	else
+			// 	{
+			// 		node_pointer tmp_parent2 = replace_with->parent;
+			// 		node_pointer tmp_right2 = replace_with->right;
+			// 		node_pointer tmp_left2 = replace_with->left;
+
+			// 		if (!tmp_parent)
+			// 			last->parent = replace_with;
+			// 		else if (to_remove == tmp_parent->left)
+			// 			tmp_parent->left = replace_with;
+			// 		else if (to_remove == tmp_parent->right)
+			// 			tmp_parent->right = replace_with;
+					
+			// 		replace_with->left = tmp_left;
+			// 		if (replace_with->left == replace_with)
+			// 			replace_with->left = tmp_left2;
+			// 		replace_with->right = tmp_right;
+			// 		if (replace_with->right == replace_with)
+			// 			replace_with->right = tmp_right2;
+			// 		replace_with->parent = tmp_parent;
+
+			// 		tmp_parent2->left = tmp_left2;
+			// 		tmp_parent2->right = tmp_right2;
+			// 	}
+			// 	node_alloc.destroy(to_remove);
+			// 	node_alloc.deallocate(to_remove, 1);
+			// 	_size--;
+			// 	return 1;
+			// }
+
 			size_type erase(const value_type& k) {
 				node_pointer to_remove = find(k).as_node();
 				if (!to_remove)
 					return 0;
-
 				node_pointer tmp_parent, tmp_left, tmp_right;
 				tmp_parent = to_remove->parent;
 				tmp_left = to_remove->left;
 				tmp_right = to_remove->right;
 
-				node_pointer replace_with = 0;
+				node_pointer replacement_node = 0;
 				if (tmp_right)
-					replace_with = tmp_right->leftmost();
+					replacement_node = tmp_right->leftmost();
 				else if (tmp_left)
-					replace_with = tmp_left->rightmost();
-				if (!replace_with)
-				{
-					if (last->left == to_remove)
-						last->left = tmp_parent;
-					if (last->right == to_remove)
-						last->right = tmp_parent;
-					if (last->parent == to_remove)
-						last->parent = tmp_parent;
-				}
-				else
-				{
-					node_pointer tmp_parent2 = replace_with->parent;
-					node_pointer tmp_right2 = replace_with->right;
-					node_pointer tmp_left2 = replace_with->left;
+					replacement_node = tmp_left->rightmost();
+				
+				if (to_remove == last->parent)
+					last->parent = replacement_node;
 
-					if (!tmp_parent)
-						last->parent = replace_with;
-					else if (to_remove == tmp_parent->left)
-						tmp_parent->left = replace_with;
-					else if (to_remove == tmp_parent->right)
-						tmp_parent->right = replace_with;
-					
-					replace_with->left = tmp_left;
-					if (replace_with->left == replace_with)
-						replace_with->left = tmp_left2;
-					replace_with->right = tmp_right;
-					if (replace_with->right == replace_with)
-						replace_with->right = tmp_right2;
+				if (to_remove == last->left)
+					last->left = replacement_node;
+				
+				if (to_remove == last->right)
+					last->right = replacement_node;
 
-					tmp_parent2->left = tmp_left2;
-					tmp_parent2->right = tmp_right2;
+				//if not root
+				if (to_remove->parent)
+				{
+					if (to_remove->parent->right == to_remove)
+						to_remove->parent->right = replacement_node;
+					if (to_remove->parent->left == to_remove)
+						to_remove->parent->left = replacement_node;
 				}
+
+				if (replacement_node)
+				{
+					node_pointer tmp_parent2, tmp_left2, tmp_right2;
+					tmp_parent2 = replacement_node->parent;
+					tmp_left2 = replacement_node->left;
+					tmp_right2 = replacement_node->right;
+					replacement_node->parent = to_remove->parent;
+					if (tmp_parent2 != to_remove)
+					{
+						replacement_node->right = tmp_right;
+						replacement_node->left = tmp_left;
+						if (tmp_right)
+							tmp_right->parent = replacement_node;
+						if (tmp_left)
+							tmp_left->parent = replacement_node;
+						
+						node_pointer child = 0;
+						if (tmp_right2)
+							child = tmp_right2;
+						if (tmp_left2)
+							child = tmp_left2;
+						
+						if (child)
+							child->parent = tmp_parent2;
+						
+						if (tmp_parent2->left == replacement_node)
+							tmp_parent2->left = child;
+						else if (tmp_parent2->right == replacement_node)
+							tmp_parent2->right = child;						
+					}
+				}
+
 				node_alloc.destroy(to_remove);
 				node_alloc.deallocate(to_remove, 1);
+				_size--;
 				return 1;
 			}
 
@@ -452,8 +515,31 @@ namespace ft {
 					}
 				}
 				return end();
-				
 			}
+
+			void ft_print_node(node_pointer n) {
+				std::cout << " value: " << n->content.first;
+				if (n->left)
+					std::cout << " | left : " << n->left->content.first;
+				else
+					std::cout << " | left : X";
+				if (n->right)
+					std::cout << " | right : " << n->right->content.first;
+				else
+					std::cout << " | right : X";
+				std::cout << "\n";
+			}
+
+			void ft_print(node_pointer n) {
+				if (!n)
+					n = last->parent;
+				ft_print_node(n);
+				if (n->left)
+					ft_print(n->left);
+				if (n->right)
+					ft_print(n->right);
+			}
+
 		private:
 			node_pointer		last;
 			Comp				comp;
