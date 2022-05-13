@@ -4,16 +4,15 @@
 #include "RBbst.hpp"
 
 namespace ft {
-	template <	class Key,												// map::key_type
-				class T,												// map::mapped_type
-				class Compare = std::less<Key>,							// map::key_compare
-				class Alloc = std::allocator<ft::pair<const Key, T> > >	// map::allocator_type
-	class map {
+	template <	class T,							// set::value_type
+				class Compare = std::less<T>,		// set::key_compare
+				class Alloc = std::allocator<T>	 >	// set::allocator_type
+	class set {
 		public:
-			typedef	Key													key_type;
-			typedef T													mapped_type;
-			typedef	ft::pair<const Key, T>								value_type;
+			typedef	const T												key_type;
+			typedef const T												value_type;
 			typedef	Compare												key_compare;
+			typedef	Compare												value_compare;
 			typedef	Alloc												allocator_type;
 
 			typedef typename allocator_type::reference					reference;
@@ -21,7 +20,7 @@ namespace ft {
 			typedef	typename allocator_type::pointer					pointer;
 			typedef	typename allocator_type::const_pointer				const_pointer;
 
-			typedef tree_iterator<value_type>							iterator;
+			typedef tree_set_iterator<value_type>						iterator;
 			typedef tree_const_iterator<value_type>						const_iterator;
 			typedef ft::reverse_iterator<iterator>						reverse_iterator;
 			typedef ft::reverse_iterator<const_iterator>				const_reverse_iterator;
@@ -29,45 +28,30 @@ namespace ft {
 			typedef	ptrdiff_t											difference_type;
 			typedef	std::size_t											size_type;
 
-			class value_compare : std::binary_function<value_type, value_type, bool> {
-				// in C++98, it is required to inherit binary_function<value_type,value_type,bool>
-				protected:
-					Compare comp;
-				public:
-					typedef bool result_type;
-					typedef value_type first_argument_type;
-					typedef value_type second_argument_type;
-					value_compare(Compare c) : comp(c) {}
-					bool operator() (const value_type& x, const value_type& y) const
-					{
-						return comp(x.first, y.first);
-					}
-			};
-
-			explicit map (	const key_compare& _comp = key_compare(),
-              				const allocator_type& _alloc = allocator_type())
-				:	bst(value_compare(_comp)),
-					comp(_comp),
-					alloc(_alloc) {}
-
+			explicit set (	const key_compare& comp = key_compare(),
+            				const allocator_type& alloc = allocator_type())
+				:	bst(comp),
+					_comp(comp),
+					_alloc(alloc) {}
+			
 			template <class InputIterator>
-			map (	InputIterator first, InputIterator last,
-					const key_compare& _comp = key_compare(),
-					const allocator_type& _alloc = allocator_type())
-				:	bst(value_compare(_comp)),
-					comp(_comp),
-					alloc(_alloc) {
+			set (	InputIterator first, InputIterator last,
+					const key_compare& comp = key_compare(),
+					const allocator_type& alloc = allocator_type())
+				:	bst(comp),
+					_comp(comp),
+					_alloc(alloc) {
 						insert(first, last);
 					}
 			
-			map (const map& x)
+			set (const set& x)
 				:	bst(x.bst),
-					comp(x.comp),
-					alloc(x.alloc) {}
+					_comp(x._comp),
+					_alloc(x._alloc) {}
 
-			~map() {}
+			~set() {}
 
-			map& operator=(const map& m) {
+			set& operator=(const set& m) {
 				bst = m.bst;
 				return *this;
 			}
@@ -88,8 +72,8 @@ namespace ft {
 			size_type size() const { return bst.size(); }
 			size_type max_size() const { return bst.max_size(); }
 
-			mapped_type& operator[] (const key_type& k) {
-				return (*((this->insert(ft::make_pair(k,mapped_type()))).first)).second;
+			value_type& operator[] (const key_type& k) {
+				return (*((this->insert(k)).first)).second;
 			}
 
 			pair<iterator,bool> insert (const value_type& val) {
@@ -109,7 +93,7 @@ namespace ft {
 
 			void erase (iterator position) { bst.erase(position.as_node()); }
 			size_type erase (const key_type& k) {
-				return bst.erase(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				return bst.erase(k);
 			}
      		void erase (iterator first, iterator last) {
 				iterator cur = first;
@@ -122,21 +106,21 @@ namespace ft {
 				}
 			}
 
-			void swap (map& x) { bst.swap(x.bst); }
+			void swap (set& x) { bst.swap(x.bst); }
 
 			void clear() { 
 				bst.clear();
 			}
 
-			key_compare		key_comp() const { return comp; }
-			value_compare	value_comp() const { return value_compare(comp); }
+			key_compare		key_comp() const { return _comp; }
+			value_compare	value_comp() const { return _comp; }
 
 			iterator	find (const key_type& k) {
-				return bst.find(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				return bst.find(k);
 			}
 			
 			const_iterator find (const key_type& k) const {
-				return bst.find(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				return bst.find(k);
 			}
 
 			size_type count (const key_type& k) const {
@@ -144,43 +128,43 @@ namespace ft {
 			}
 
 			iterator lower_bound (const key_type& k) {
-				return bst.lower_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				return bst.lower_bound(k);
 			}
 			const_iterator lower_bound (const key_type& k) const {
-				return bst.lower_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				return bst.lower_bound(k);
 			}
 
 			iterator upper_bound (const key_type& k) {
-				return bst.upper_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				return bst.upper_bound(k);
 			}
 			const_iterator upper_bound (const key_type& k) const {
-				return bst.upper_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				return bst.upper_bound(k);
 			}
 
 			pair<const_iterator,const_iterator> equal_range (const key_type& k) const {
-				const_iterator it1 = bst.lower_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
-				const_iterator it2 = bst.upper_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				const_iterator it1 = bst.lower_bound(k);
+				const_iterator it2 = bst.upper_bound(k);
 				return ft::make_pair<const_iterator, const_iterator> (it1, it2);
 			}
 			pair<iterator,iterator>             equal_range (const key_type& k) {
-				iterator it1 = bst.lower_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
-				iterator it2 = bst.upper_bound(ft::make_pair<const key_type, mapped_type> (k, mapped_type()));
+				iterator it1 = bst.lower_bound(k);
+				iterator it2 = bst.upper_bound(k);
 				return ft::make_pair<iterator, iterator> (it1, it2);
 			}
 
 			allocator_type get_allocator() const {
-				return alloc;
+				return _alloc;
 			}
 		private:
-			RBbst<value_type, value_compare, allocator_type>	bst;
-			key_compare											comp;
-			allocator_type										alloc;
+			RBbst<value_type, value_compare, allocator_type, iterator>	bst;
+			key_compare													_comp;
+			allocator_type												_alloc;
 
 	};
 
-	template <class Key, class T, class Compare, class Alloc>
-	bool operator== (const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs) {
-		typedef typename map<Key, T, Compare, Alloc>::const_iterator const_iterator;
+	template <class T, class Compare, class Alloc>
+	bool operator== (const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs) {
+		typedef typename set<T, Compare, Alloc>::const_iterator const_iterator;
 		if (lhs.size() != rhs.size())
 			return false;
 		const_iterator itab = lhs.begin();
@@ -198,15 +182,15 @@ namespace ft {
 		return true;
 	}
 
-	template <class Key, class T, class Compare, class Alloc>
-	bool operator!= (const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs) {
+	template <class T, class Compare, class Alloc>
+	bool operator!= (const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs) {
 		return !(lhs == rhs);
 	}
 
 
-	template <class Key, class T, class Compare, class Alloc>
-	bool operator< (const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs) {
-		typedef typename map<Key, T, Compare, Alloc>::const_iterator const_iterator;
+	template <class T, class Compare, class Alloc>
+	bool operator< (const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs) {
+		typedef typename set<T, Compare, Alloc>::const_iterator const_iterator;
 		const_iterator itab = lhs.begin();
 		const_iterator itae = lhs.end();
 		const_iterator itbb = rhs.begin();
@@ -227,9 +211,9 @@ namespace ft {
 		return true;
 	}
 
-	template <class Key, class T, class Compare, class Alloc>
-	bool operator<= (const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs) {
-		typedef typename map<Key, T, Compare, Alloc>::const_iterator const_iterator;
+	template <class T, class Compare, class Alloc>
+	bool operator<= (const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs) {
+		typedef typename set<T, Compare, Alloc>::const_iterator const_iterator;
 		const_iterator itab = lhs.begin();
 		const_iterator itae = lhs.end();
 		const_iterator itbb = rhs.begin();
@@ -250,9 +234,9 @@ namespace ft {
 		return true;
 	}
 
-	template <class Key, class T, class Compare, class Alloc>
-	bool operator> (const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs) {
-		typedef typename map<Key, T, Compare, Alloc>::const_iterator const_iterator;
+	template <class T, class Compare, class Alloc>
+	bool operator> (const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs) {
+		typedef typename set<T, Compare, Alloc>::const_iterator const_iterator;
 		const_iterator itab = lhs.begin();
 		const_iterator itae = lhs.end();
 		const_iterator itbb = rhs.begin();
@@ -273,9 +257,9 @@ namespace ft {
 		return true;
 	}
 
-	template <class Key, class T, class Compare, class Alloc>
-	bool operator>= (const map<Key, T, Compare, Alloc>& lhs, const map<Key, T, Compare, Alloc>& rhs) {
-		typedef typename map<Key, T, Compare, Alloc>::const_iterator const_iterator;
+	template <class T, class Compare, class Alloc>
+	bool operator>= (const set<T, Compare, Alloc>& lhs, const set<T, Compare, Alloc>& rhs) {
+		typedef typename set<T, Compare, Alloc>::const_iterator const_iterator;
 		const_iterator itab = lhs.begin();
 		const_iterator itae = lhs.end();
 		const_iterator itbb = rhs.begin();
@@ -295,7 +279,4 @@ namespace ft {
 			return false;
 		return true;
 	}
-
-
-
 }

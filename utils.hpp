@@ -6,7 +6,7 @@
 /*   By: alabalet <alabalet@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/31 13:23:41 by alabalet          #+#    #+#             */
-/*   Updated: 2022/02/17 14:24:36 by alabalet         ###   ########.fr       */
+/*   Updated: 2022/05/11 17:03:50 by alabalet         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,7 @@ namespace ft {
 			explicit reverse_iterator(Iter it) : _base(it) {}
 
 			template <class _Iter>
-  				reverse_iterator (const reverse_iterator<_Iter>& rev_it) : _base(rev_it.base()) {}
+  			reverse_iterator(const reverse_iterator<_Iter>& rev_it) : _base(rev_it.base()) {}
 
 			Iter base() const { return _base; }
 
@@ -130,33 +130,33 @@ namespace ft {
 			reference operator[] (difference_type n) const { return base()[-n-1]; }
 	};
 
-	template <class Iterator>
-  	bool operator== (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs) {
+	template <class Iterator1, class Iterator2>
+  	bool operator== (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
 		return lhs.base() == rhs.base();
 	}
 
-	template <class Iterator>
-  	bool operator!= (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs) {
+	template <class Iterator1, class Iterator2>
+  	bool operator!= (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
 		return lhs.base() != rhs.base();
 	}
 
-	template <class Iterator>
-  	bool operator< (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs) {
+	template <class Iterator1, class Iterator2>
+  	bool operator< (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
 		return lhs.base() > rhs.base();
 	}
 
-	template <class Iterator>
-  	bool operator> (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs) {
+	template <class Iterator1, class Iterator2>
+  	bool operator> (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
 		return lhs.base() < rhs.base();
 	}
 
-	template <class Iterator>
-  	bool operator<= (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs) {
+	template <class Iterator1, class Iterator2>
+  	bool operator<= (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
 		return lhs.base() >= rhs.base();
 	}
 
-	template <class Iterator>
-  	bool operator>= (const reverse_iterator<Iterator>& lhs, const reverse_iterator<Iterator>& rhs) {
+	template <class Iterator1, class Iterator2>
+  	bool operator>= (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
 		return lhs.base() <= rhs.base();
 	}
 
@@ -168,6 +168,16 @@ namespace ft {
 	template <class Iterator>
   	reverse_iterator<Iterator> operator- (typename reverse_iterator<Iterator>::difference_type n, const reverse_iterator<Iterator>& rev_it) {
 		return rev_it - n;
+	}
+
+	template <class Iterator1, class Iterator2>
+	typename reverse_iterator<Iterator1>::difference_type operator+ (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
+		return lhs.base() + rhs.base();
+	}
+
+	template <class Iterator1, class Iterator2>
+	typename reverse_iterator<Iterator1>::difference_type operator- (const reverse_iterator<Iterator1>& lhs, const reverse_iterator<Iterator2>& rhs) {
+		return rhs.base() - lhs.base();
 	}
 	
 	//distance
@@ -240,6 +250,52 @@ namespace ft {
 	pair<T1,T2> make_pair (T1 x, T2 y)
   	{
     	return ( pair<T1,T2>(x,y) );
+	}
+
+	template <class InputIterator1, class InputIterator2>
+	bool equal (InputIterator1 first1, InputIterator1 last1, InputIterator2 first2) {
+		while (first1 != last1)
+		{
+			if (!(*first1 == *first2))
+				return false;
+			first1++;
+			first2++;
+		}
+		return true;
+	}
+
+	template <class InputIterator1, class InputIterator2, class BinaryPredicate>
+	bool equal (InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, BinaryPredicate pred) {
+		while (first1 != last1)
+		{
+			if (!pred(first1,first2))
+				return false;
+			first1++;
+			first2++;
+		}
+		return true;
+	}
+
+	template <class InputIterator1, class InputIterator2>
+	bool lexicographical_compare (InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2) {
+		while (first1!=last1)
+		{
+			if (first2==last2 || *first2<*first1) return false;
+			else if (*first1<*first2) return true;
+			++first1; ++first2;
+		}
+		return (first2!=last2);
+	}
+
+	template <class InputIterator1, class InputIterator2, class Compare>
+	bool lexicographical_compare (InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, Compare comp) {
+		while (first1!=last1)
+		{
+			if (comp(first2, first1) || !comp(first1, first2)) return false;
+			else if (comp(first1, first2)) return true;
+			++first1; ++first2;
+		}
+		return (first2!=last2);
 	}
 }
 
